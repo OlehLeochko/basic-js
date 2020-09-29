@@ -2,7 +2,13 @@ const CustomError = require("../extensions/custom-error");
 
 module.exports = function transform(arr) {
   let res = [];
-  arr.forEach((item, index) => res.push(item));
+  if (Array.isArray(arr) === false) {
+    throw new Error();
+  }
+  //arr.forEach((item, index) => res.push(item));
+  for (let i = 0; i < arr.length; i++) {
+    res.push(arr[i]);
+  }
   for (let i = 0; i < res.length; i++) {
     if (res[i] === "--double-next") {
       res[i] = res[i + 1];

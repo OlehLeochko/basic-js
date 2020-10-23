@@ -1,106 +1,107 @@
 const CustomError = require("../extensions/custom-error");
 
 class VigenereCipheringMachine {
-  encrypt(message, gama) {
-    //let alphabeter = ["А", "Б", "В", "Г", "Ґ", "Д", "Е", "Є", "Ж", "З", "И", "І", "Ї", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Ч", "Ш", "Щ", "Ь", "Ю", "Я", "_", "0", "1", "2", "3", "5", "6", "7", "8", "9",];
-    // let gama = "БРАТИСЛАВ";
-    // let message = "НЕРЮНГРІ_230_КМ";
-    let alphabeter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    gama = gama.split('');
-    message = message.split('');
-    let sum = 1;
+  constructor(reverse) {
+    if (!reverse) {
+      this._reverse = false;
+    }
+    else {
+      this._reverse = reverse;
+    }
+
+  }
+  encrypt(text, key) {
+    if (!text || !key) {
+      throw new Error();
+    }
+    let lang = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    //let message = text.split("").filter(item => (lang.includes(item)) === true).join("");
+    let message = "";
+    text = text.toUpperCase();
+    for (let i = 0; i < text.length; i++) {
+      if (text.charCodeAt(i) >= 65 && text.charCodeAt(i) <= 90) {
+        message += text[i];
+      }
+    }
+    if (key.length < message.length) {
+      let len = Math.floor(message.length / key.length);
+      key = key.repeat(len);
+      let k = message.length % key.length;
+      key = key + key.slice(0, k)
+    }
+    let res = [];
+    message = message.toUpperCase().split("").map(item => lang.indexOf(item));
+    key = key.toUpperCase().split("").map(item => lang.indexOf(item));
     for (let i = 0; i < message.length; i++) {
-      if (sum <= gama.length) {
-        gama[i] = gama[sum - 1]
+      if ((message[i] + key[i]) >= lang.length) {
+        res.push(message[i] + key[i] - lang.length)
       }
       else {
-        sum = sum - gama.length;
-        gama[i] = gama[sum - 1];
-      }
-      sum++;
-    }
-    let messageNumOfSimbol = [];
-    let gamaNumOfSimbol = [];
-    let sumOfSimbol = [];
-    for (let i = 0; i < message.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (message[i] == alphabeter[j]) {
-          messageNumOfSimbol[i] = j
-        };
+        res.push(message[i] + key[i])
       }
     }
-    for (let i = 0; i < gama.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (gama[i] == alphabeter[j]) {
-          gamaNumOfSimbol[i] = j
-        };
+    res = res.map(item => item = lang[item]);
+    for (let i = 0; i < text.length; i++) {
+      if (text.charCodeAt(i) < 65 || text.charCodeAt(i) > 90) {
+        res.splice(i, 0, text[i]);
       }
     }
-    for (let i = 0; i < message.length; i++) {
-      sumOfSimbol[i] = (gamaNumOfSimbol[i] + 1) +
-        (messageNumOfSimbol[i] + 1);
-      if (sumOfSimbol[i] > alphabeter.length)
-        sumOfSimbol[i] = sumOfSimbol[i] - alphabeter.length;
-    }
-
-    let newmessage = new Array(message.length);
-    for (let i = 0; i < message.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (sumOfSimbol[i] == j + 1)
-          newmessage[i] = alphabeter[j];
-      }
-    }
-
-    return newmessage.join("");
+    //res. 
+    return this._reverse === false ? res.join("") : res.reverse().join("");
   }
-  decrypt(newmessage, gama) {
-    let alphabeter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    gama = Array.from(gama);
-    let message = Array.from(newmessage);
-    let count = 1;
+  decrypt(text, key) {
+    if (!text || !key) {
+      throw new Error();
+    }
+    let lang = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    //let message = text.split("").filter(item => (lang.includes(item)) === true).join("");
+    let message = "";
+    text = text.toUpperCase();
+    for (let i = 0; i < text.length; i++) {
+      if (text.charCodeAt(i) >= 65 && text.charCodeAt(i) <= 90) {
+        message += text[i];
+      }
+    }
+    if (key.length < message.length) {
+      let len = Math.floor(message.length / key.length);
+      key = key.repeat(len);
+      let k = message.length % key.length;
+      key = key + key.slice(0, k)
+    }
+    let res = [];
+    message = message.toUpperCase().split("").map(item => lang.indexOf(item));
+    key = key.toUpperCase().split("").map(item => lang.indexOf(item));
     for (let i = 0; i < message.length; i++) {
-      if (count <= gama.length) {
-        gama[i] = gama[count - 1]
+      if (message[i] >= key[i]) {
+        res.push(message[i] - key[i])
       }
       else {
-        count = count - gama.length;
-        gama[i] = gama[count - 1];
-      }
-      count++;
-    }
-    let newMessageNumOfSimbol = [];
-    for (let i = 0; i < newmessage.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (newmessage[i] == alphabeter[j]) {
-          newMessageNumOfSimbol[i] = j
-        };
+        res.push(message[i] + 26 - key[i])
       }
     }
-    let gamaNumOfSimbol = [];
-    for (let i = 0; i < gama.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (gama[i] == alphabeter[j]) {
-          gamaNumOfSimbol[i] = j
-        };
+    res = res.map(item => item = lang[item]);
+    for (let i = 0; i < text.length; i++) {
+      if (text.charCodeAt(i) < 65 || text.charCodeAt(i) > 90) {
+        res.splice(i, 0, text[i]);
       }
     }
-    let difMassAndGama = [];
-    for (let i = 0; i < newmessage.length; i++) {
-
-      difMassAndGama[i] = (newMessageNumOfSimbol[i] + 1) -
-        (gamaNumOfSimbol[i] + 1);
-      if (difMassAndGama[i] < 0)
-        difMassAndGama[i] = difMassAndGama[i] + alphabeter.length;
-    }
-    for (let i = 0; i < message.length; i++) {
-      for (let j = 0; j < alphabeter.length; j++) {
-        if (difMassAndGama[i] == j + 1)
-          message[i] = alphabeter[j];
-      }
-    }
-    return message.join("");
+    return this._reverse === false ? res.join("") : res.reverse().join("");
   }
-
 }
 
 module.exports = VigenereCipheringMachine;
+
+/*for (let i = 0; i < message.length; i++) {
+  if (message[i] === " ") {
+    res.push(" ");
+    i++
+  }
+  if ((message[i] + key[i]) > lang.length) {
+    res.push(message[i] + key[i] - lang.length)
+  }
+  else {
+    res.push(message[i] + key[i])
+  }
+}
+return res.map(item => item = lang[item]).join("");
+}*/
